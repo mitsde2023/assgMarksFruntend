@@ -13,7 +13,7 @@ const StudentInfo = () => {
 
   const fetchData = async () => {
     try {
-      const resData = await axios.get('https://mitsde-assignment.onrender.com/api/marks/student-marks', {
+      const resData = await axios.get('http://65.0.91.129:7000/api/marks/student-marks', {
         params: searchValues,
       });
       setData(resData.data);
@@ -31,7 +31,7 @@ const StudentInfo = () => {
 
   const FetchBatchData = async () => {
     try {
-      const batchData = await axios.get(`https://mitsde-assignment.onrender.com/api/marks/getBatchName/${subjectId}`);
+      const batchData = await axios.get(`http://65.0.91.129:7000/api/marks/getBatchName/${subjectId}`);
       const batch = batchData.data.subject;
       setBatchData(batch)
     } catch (error) {
