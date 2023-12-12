@@ -13,12 +13,18 @@ const StudentInfo = () => {
 
   const fetchData = async () => {
     try {
+<<<<<<< HEAD
       const resData = await axios.get(
         "http://65.1.54.123/api/marks/student-marks",
         {
           params: searchValues,
         }
       );
+=======
+      const resData = await axios.get('http://65.0.91.129:7000/api/marks/student-marks', {
+        params: searchValues,
+      });
+>>>>>>> 4179a0c8a1c3cba89e00550d75cafaef3e5bbae3
       setData(resData.data);
       setMarksData(resData.data.flattenedData);
     } catch (error) {
@@ -34,9 +40,13 @@ const StudentInfo = () => {
 
   const FetchBatchData = async () => {
     try {
+<<<<<<< HEAD
       const batchData = await axios.get(
         `http://65.1.54.123/api/marks/getBatchName/${subjectId}`
       );
+=======
+      const batchData = await axios.get(`http://65.0.91.129:7000/api/marks/getBatchName/${subjectId}`);
+>>>>>>> 4179a0c8a1c3cba89e00550d75cafaef3e5bbae3
       const batch = batchData.data.subject;
       setBatchData(batch);
     } catch (error) {
