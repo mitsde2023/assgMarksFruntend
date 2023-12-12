@@ -6,13 +6,13 @@ const Subject = () => {
     const [subjectClassData, setSubjectClassData] = useState([]);
 
     useEffect(() => {
-        axios.get('https://mitsde-assignment.onrender.com/api/student/subject-class')
+        axios.get('http://65.1.54.123/api/student/subject-class')
             .then(response => setSubjectClassData(response.data))
             .catch(error => console.error('Error fetching data:', error.message));
     }, []);
 
     const handleUpdate = (subjectId, subjectName) => {
-        const updateOne = axios.post(`https://mitsde-assignment.onrender.com/api/marks/subject_marks_update/${subjectId}/${subjectName}`);
+        const updateOne = axios.post(`http://65.1.54.123/api/marks/subject_marks_update/${subjectId}/${subjectName}`);
         updateOne.then(response => {
             console.log(response.data);
             console.log(`Updating subject ${subjectId}: ${subjectName}`);
