@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-
+import { toast } from 'react-toastify';
 const StudentInfo = () => {
   const [searchValues, setSearchValues] = useState({
     email: '',
@@ -11,27 +11,29 @@ const StudentInfo = () => {
   const [batchData, setBatchData] = useState([]);
   const [subjectId, setsubjectId] = useState('');
 
+
   const fetchData = async () => {
     try {
-      const resData = await axios.get('http://65.1.54.123/api/marks/student-marks', {
+      const resData = await axios.get('http://65.1.54.123:7000/api/marks/student-marks', {
         params: searchValues,
       });
       setData(resData.data);
       setMarksData(resData.data.flattenedData);
+      toast.success(`Student Data successfully..! ${registration_number}`, {
+        autoClose: 1500,
+      });
     } catch (error) {
-      console.error("Error fetching data:", error.message);
-      setData('');
       setMarksData('');
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, [searchValues]);
+  },[searchValues, ]);
 
   const FetchBatchData = async () => {
     try {
-      const batchData = await axios.get(`http://65.1.54.123/api/marks/getBatchName/${subjectId}`);
+      const batchData = await axios.get(`http://65.1.54.123:7000/api/marks/getBatchName/${subjectId}`);
       const batch = batchData.data.subject;
       setBatchData(batch)
     } catch (error) {
@@ -59,7 +61,6 @@ const StudentInfo = () => {
   const handleSearchClick = () => {
     fetchData();
   };
-
 
   const { name, email, registration_number, user_username, contact_number, date } = data;
 
@@ -183,7 +184,11 @@ const StudentInfo = () => {
               </tbody>
             </table>
           </div>
-        </> : ''}
+        </> : <>
+          <div className='col-md-6 mt-2'>
+            <h6 className='text-bg-danger p-3 rounded'>Student Data Not Found, plz provide valid input</h6>
+          </div>
+        </>}
       </div>
     </div>
   );
