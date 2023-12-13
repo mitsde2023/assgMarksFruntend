@@ -19,7 +19,7 @@ const StudentInfo = () => {
       });
       setData(resData.data);
       setMarksData(resData.data.flattenedData);
-      toast.success(`Student Data successfully..! ${registration_number}`, {
+      toast.success(`Student Data successfully..!`, {
         autoClose: 1500,
       });
     } catch (error) {
