@@ -1,55 +1,72 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
+import { toast } from "react-toastify";
+
 const StudentInfo = () => {
   const [searchValues, setSearchValues] = useState({
-    email: '',
-    registration_number: '',
+    // email: '',
+    registration_number: "",
   });
   const [data, setData] = useState([]);
   const [marksData, setMarksData] = useState([]);
   const [batchData, setBatchData] = useState([]);
-  const [subjectId, setsubjectId] = useState('');
+  const [subjectId, setsubjectId] = useState("");
+  const [loading, setLoading] = useState("");
 
-
+  console.log(searchValues.registration_number.length > 0, 17);
   const fetchData = async () => {
     try {
-      const resData = await axios.get('http://65.1.54.123:7000/api/marks/student-marks', {
-        params: searchValues,
-      });
-      setData(resData.data);
-      setMarksData(resData.data.flattenedData);
-      toast.success(`Student Data successfully..!`, {
-        autoClose: 1500,
-      });
+      const resData = await axios.get(
+        "http://65.1.54.123:7000/api/marks/student-marks",
+        {
+          params: searchValues,
+        }
+      );
+      if (resData) {
+        setData(resData.data);
+        setMarksData(resData.data.flattenedData);
+        toast.success(`Student Data successfully..!`, {
+          autoClose: 1100,
+        });
+      }
     } catch (error) {
-      setMarksData('');
+      setMarksData("");
     }
   };
 
   useEffect(() => {
     fetchData();
-  },[searchValues, ]);
+    if (searchValues.registration_number.length > 0) {
+      setLoading(
+        `Enter Correct registration_number Student Not present with ${searchValues.registration_number} `
+      );
+    } else {
+      setLoading(``);
+    }
+  }, [searchValues]);
 
   const FetchBatchData = async () => {
     try {
-      const batchData = await axios.get(`http://65.1.54.123:7000/api/marks/getBatchName/${subjectId}`);
+      const batchData = await axios.get(
+        `http://65.1.54.123:7000/api/marks/getBatchName/${subjectId}`
+      );
       const batch = batchData.data.subject;
-      setBatchData(batch)
+      setBatchData(batch);
     } catch (error) {
-      setBatchData('')
+      setBatchData("");
     }
-  }
+  };
 
   useEffect(() => {
     if (marksData.length > 0) {
       setsubjectId(marksData[0].subject_id);
     }
-  }, [data, marksData])
+  }, [data, marksData]);
 
   useEffect(() => {
-    FetchBatchData()
-  }, [subjectId])
+    FetchBatchData();
+  }, [subjectId]);
 
   const handleSearchChange = (field, value) => {
     setSearchValues((prevValues) => ({
@@ -62,74 +79,106 @@ const StudentInfo = () => {
     fetchData();
   };
 
-  const { name, email, registration_number, user_username, contact_number, date } = data;
+  const { name, email, registration_number, contact_number } = data;
+
+  const downloadMarks = () => {
+    const basicData = [{
+      RegistrationNumber: data.registration_number,
+    }];
+    const excelData = prepareDataForExcel(data);
+
+    // Use the spread operator to combine basicData and excelData
+    const ws = XLSX.utils.json_to_sheet([...basicData, ...excelData]);
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, `${registration_number}_marks_data.xlsx`);
+  };
+
+  const prepareDataForExcel = (data) => {
+    return data.flattenedData.map((item, index) => ({
+      Subject: item.subject_name,
+      "Assignment 1":
+        item.assignments[0].mk !== null ? item.assignments[0].mk : "N/A",
+      Atps1: item.assignments[0].atmpt,
+      "Updated 1": new Date(item.updatedAt).toLocaleDateString(),
+      "Assignment 2":
+        item.assignments[1].mk !== null ? item.assignments[1].mk : "N/A",
+      Atps2: item.assignments[1].atmpt,
+      Total: item.assignments.reduce(
+        (acc, assignment) => acc + (Number(assignment.mk) || 0),
+        0
+      ),
+      "Updated ": new Date(item.updatedAt).toLocaleDateString(),
+    }));
+  };
+
 
   return (
-    <div className="container fount">
-      <div className='row rounded' style={{ backgroundImage: 'linear-gradient(to right, rgb(252, 252, 252), rgb(247, 229, 215)' }}>
-        <div className='d-flex justify-content-between'>
-          <img style={{ width: "170px" }} src='https://res.cloudinary.com/dtgpxvmpl/image/upload/v1702100329/mitsde_logo_vmzo63.png' />
+    <div className="container fount" style={{ minHeight: "90vh" }}>
+      <div
+        className="row rounded"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgb(252, 252, 252), rgb(247, 229, 215)",
+        }}
+      >
+        <div className="d-flex justify-content-between">
+          <img
+            style={{ width: "170px" }}
+            src="https://res.cloudinary.com/dtgpxvmpl/image/upload/v1702100329/mitsde_logo_vmzo63.png"
+            alt="logo"
+          />
           {/* <h3 className="text-center pt-2">MITSDE</h3> */}
         </div>
       </div>
-      <div className="row mb-3">
-        <div className="col-md-6 mt-2">
-          <div className="card rounded">
-            <h5 class="card-header">Search Assignment Marks</h5>
-          </div>
-          <div className='d-flex m-2 justify-content-between'>
-            <input
-              type="text"
-              id="email"
-              placeholder='Email'
-              className="form-control"
-              value={searchValues.email}
-              onChange={(e) => handleSearchChange('email', e.target.value)}
-            />
-          </div>
-          <div className='d-flex m-2'>
+      <div className="row p-1 border mt-1">
+        <div className="col-md-4 mt-1">
+          <strong class="p-1 raunded">Search Assignment Marks</strong>
+          <div className="d-flex m-1">
             <input
               type="text"
               id="registration_number"
-              placeholder='registration_number'
+              placeholder="registration_number"
               className="form-control"
               value={searchValues.registration_number}
-              onChange={(e) => handleSearchChange('registration_number', e.target.value)}
+              onChange={(e) =>
+                handleSearchChange("registration_number", e.target.value)
+              }
             />
           </div>
-          <button className="btn btn-primary mb-3 mt-3" onClick={handleSearchClick}>
+          <button className="btn btn-primary mt-1" onClick={handleSearchClick}>
             Search
           </button>
+        </div>
+        {marksData ? (
+          <>
+            <div className="col-md-4 mt-1">
+              <div className="card rounded">
+                <div className="card-body text-black">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <strong className="start">Name:</strong>
+                    <div className="end">{name}</div>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <strong className="start">Email:</strong>
+                    <div className="end">{email}</div>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <strong className="start">Registration Number:</strong>
+                    <div className="end">{registration_number}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3 mt-1">
+              <div className="card rounded">
+                <div className="card-body text-black">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <strong className="start">Contact Number:</strong>
+                    <div className="end">{contact_number}</div>
+                  </div>
 
-          <div className="card rounded">
-            <h5 class="card-header">Basic info of Student</h5>
-            <div className="card-body text-black">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <strong className="start">Name:</strong>
-                <div className="end">{name}</div>
-              </div>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <strong className="start">Email:</strong>
-                <div className="end">{email}</div>
-              </div>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <strong className="start">Registration Number:</strong>
-                <div className="end">{registration_number}</div>
-              </div>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <strong className="start">Username:</strong>
-                <div className="end">{user_username}</div>
-              </div>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <strong className="start">Contact Number:</strong>
-                <div className="end">{contact_number}</div>
-              </div>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <strong className="start">Date:</strong>
-                <div className="end">{date}</div>
-              </div>
-              {batchData ?
-                <>
                   <div className="d-flex justify-content-between align-items-center">
                     <strong className="start">Batch:</strong>
                     <div className="end">{batchData.batch_name}</div>
@@ -138,58 +187,108 @@ const StudentInfo = () => {
                     <strong className="start">Program:</strong>
                     <div className="end">{batchData.program_name}</div>
                   </div>
-                </> : ''}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
+
+        <div className="col-md-1 mt-2">
+          {marksData ? (
+            <>
+              <div
+                class="btn-group btn-group-sm"
+                role="group"
+                aria-label="Small button group"
+              >
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  onClick={downloadMarks}
+                >
+                  Download
+                </button>
+              </div>
+            </>
+          ) : (
+            <> </>
+          )}
+        </div>
+      </div>
+      {marksData ? (
+        <>
+          <div className="row mb-2">
+            <div className="col-md-12 mt-1">
+              <table className="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Assig-1</th>
+                    {/* <th>Mark</th> */}
+                    <th>Atps</th>
+                    {/* <th>updated 1</th> */}
+                    <th>Assig-2</th>
+                    {/* <th>Mark</th> */}
+                    <th>Atps</th>
+                    <th>Total</th>
+                    <th>updated </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.flattenedData ? (
+                    data.flattenedData.map((item, rowIndex) => {
+                      let totalMk = 0;
+                      return (
+                        <tr key={`subject-${rowIndex}`}>
+                          <td>{item.subject_name}</td>
+                          {item.assignments.map((assignment, index) => {
+                            totalMk +=
+                              Number(assignment.mk) !== null
+                                ? Number(assignment.mk)
+                                : 0;
+                            return (
+                              <React.Fragment key={index}>
+                                {/* <td>{assignment.assignment}</td> */}
+                                <td>
+                                  {assignment.mk !== null
+                                    ? assignment.mk
+                                    : "N/A"}
+                                </td>
+                                <td>{assignment.atmpt}</td>
+                              </React.Fragment>
+                            );
+                          })}
+
+                          <td>{totalMk}</td>
+                          <td>
+                            {new Date(item.updatedAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="8">{`No data available for ${searchValues}`}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-        {marksData ? <>
-          <div className="col-md-6 mt-2">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Assig_No</th>
-                  <th>Mark</th>
-                  <th>Atps</th>
-                  <th>updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.flattenedData ? (
-                  data.flattenedData.map((item, rowIndex) => (
-                    <>
-                      <tr key={`subject-${rowIndex}`}>
-                        <td>{item.subject_name}</td>
-                        <td>{item.assignments[0].assignment}</td>
-                        <td>{item.assignments[0].mk !== null ? item.assignments[0].mk : 'N/A'}</td>
-                        <td>{item.assignments[0].atmpt}</td>
-                        <td>{new Date(item.updatedAt).toLocaleDateString()}</td>
-                      </tr>
-                      {item.assignments.slice(1).map((assignment, index) => (
-                        <tr key={index}>
-                          <td></td>
-                          <td>{assignment.assignment}</td>
-                          <td>{assignment.mk !== null ? assignment.mk : 'N/A'}</td>
-                          <td>{assignment.atmpt}</td>
-                          <td>{new Date(item.updatedAt).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="8">No data available</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        </>
+      ) : (
+        <>
+          <div className="row">
+            <div className="col-md-4"></div>
+            <div className="col-md-4 mt-2">
+              <h6 className="text-danger p-2 rounded">{loading}</h6>
+            </div>
+            <div className="col-md-4"></div>
           </div>
-        </> : <>
-          <div className='col-md-6 mt-2'>
-            <h6 className='text-bg-danger p-3 rounded'>Student Data Not Found, plz provide valid input</h6>
-          </div>
-        </>}
-      </div>
+        </>
+      )}
     </div>
   );
 };
