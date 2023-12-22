@@ -16,7 +16,7 @@ const StudentInfo = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (searchValues.registration_number.length >= 2 && searchValues.registration_number.length <= 15) {
+      if (searchValues.registration_number.length >= 2 && searchValues.registration_number.length <= 14) {
         try {
           const resData = await axios.get(
             "http://65.1.54.123:7000/api/marks/student-marks",
@@ -33,6 +33,7 @@ const StudentInfo = () => {
           }
         } catch (error) {
           setMarksData("");
+          // console.log(error.response.data.message)
         }
       }
       else {
