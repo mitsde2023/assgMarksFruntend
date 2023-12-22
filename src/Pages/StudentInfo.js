@@ -14,28 +14,31 @@ const StudentInfo = () => {
   const [subjectId, setsubjectId] = useState("");
   const [loading, setLoading] = useState("");
 
-  console.log(searchValues.registration_number.length > 0, 17);
-  const fetchData = async () => {
-    try {
-      const resData = await axios.get(
-        "http://65.1.54.123:7000/api/marks/student-marks",
-        {
-          params: searchValues,
-        }
-      );
-      if (resData) {
-        setData(resData.data);
-        setMarksData(resData.data.flattenedData);
-        toast.success(`Student Data successfully..!`, {
-          autoClose: 1100,
-        });
-      }
-    } catch (error) {
-      setMarksData("");
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      if (searchValues.registration_number.length >= 2 && searchValues.registration_number.length <= 15) {
+        try {
+          const resData = await axios.get(
+            "http://65.1.54.123:7000/api/marks/student-marks",
+            {
+              params: searchValues,
+            }
+          );
+          if (resData) {
+            setData(resData.data);
+            setMarksData(resData.data.flattenedData);
+            toast.success(`Student Data successfully..!`, {
+              autoClose: 1100,
+            });
+          }
+        } catch (error) {
+          setMarksData("");
+        }
+      }
+      else {
+        setMarksData("");
+      }
+    };
     fetchData();
     if (searchValues.registration_number.length > 0) {
       setLoading(
@@ -46,17 +49,6 @@ const StudentInfo = () => {
     }
   }, [searchValues]);
 
-  const FetchBatchData = async () => {
-    try {
-      const batchData = await axios.get(
-        `http://65.1.54.123:7000/api/marks/getBatchName/${subjectId}`
-      );
-      const batch = batchData.data.subject;
-      setBatchData(batch);
-    } catch (error) {
-      setBatchData("");
-    }
-  };
 
   useEffect(() => {
     if (marksData.length > 0) {
@@ -65,18 +57,27 @@ const StudentInfo = () => {
   }, [data, marksData]);
 
   useEffect(() => {
+    const FetchBatchData = async () => {
+      if (subjectId >= 1) {
+        try {
+          const batchData = await axios.get(
+            `http://65.1.54.123:7000/api/marks/getBatchName/${subjectId}`
+          );
+          const batch = batchData.data.subject;
+          setBatchData(batch);
+        } catch (error) {
+          setBatchData("");
+        }
+      };
+    }
     FetchBatchData();
-  }, [subjectId]);
+  }, [marksData, subjectId]);
 
   const handleSearchChange = (field, value) => {
     setSearchValues((prevValues) => ({
       ...prevValues,
       [field]: value,
     }));
-  };
-
-  const handleSearchClick = () => {
-    fetchData();
   };
 
   const { name, email, registration_number, contact_number } = data;
@@ -98,12 +99,9 @@ const StudentInfo = () => {
   const prepareDataForExcel = (data) => {
     return data.flattenedData.map((item, index) => ({
       Subject: item.subject_name,
-      "Assignment 1":
-        item.assignments[0].mk !== null ? item.assignments[0].mk : "N/A",
+      "Assignment 1": item.assignments[0].mk !== null ? item.assignments[0].mk : "N/A",
       Atps1: item.assignments[0].atmpt,
-      "Updated 1": new Date(item.updatedAt).toLocaleDateString(),
-      "Assignment 2":
-        item.assignments[1].mk !== null ? item.assignments[1].mk : "N/A",
+      "Assignment 2": item.assignments[1].mk !== null ? item.assignments[1].mk : "N/A",
       Atps2: item.assignments[1].atmpt,
       Total: item.assignments.reduce(
         (acc, assignment) => acc + (Number(assignment.mk) || 0),
@@ -134,7 +132,7 @@ const StudentInfo = () => {
       </div>
       <div className="row p-1 border mt-1">
         <div className="col-md-4 mt-1">
-          <strong class="p-1 raunded">Search Assignment Marks</strong>
+          <strong className="p-1 raunded">Search Assignment Marks</strong>
           <div className="d-flex m-1">
             <input
               type="text"
@@ -147,7 +145,7 @@ const StudentInfo = () => {
               }
             />
           </div>
-          <button className="btn btn-primary mt-1" onClick={handleSearchClick}>
+          <button className="btn btn-primary mt-1">
             Search
           </button>
         </div>
@@ -199,13 +197,13 @@ const StudentInfo = () => {
           {marksData ? (
             <>
               <div
-                class="btn-group btn-group-sm"
+                className="btn-group btn-group-sm"
                 role="group"
                 aria-label="Small button group"
               >
                 <button
                   type="button"
-                  class="btn btn-outline-primary"
+                  className="btn btn-outline-primary"
                   onClick={downloadMarks}
                 >
                   Download
