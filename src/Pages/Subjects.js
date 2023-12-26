@@ -12,7 +12,7 @@ const Subject = () => {
     }, []);
 
     const handleUpdate = (subjectId, subjectName) => {
-        const updateOne = axios.post(`http://localhost:7000/api/marks/subject_marks_update/${subjectId}/${subjectName}`);
+        const updateOne = axios.post(`http://65.1.54.123:7000/api/marks/subject_marks_update/${subjectId}/${subjectName}`);
         updateOne.then(response => {
             console.log(response.data);
             console.log(`Updating subject ${subjectId}: ${subjectName}`);
