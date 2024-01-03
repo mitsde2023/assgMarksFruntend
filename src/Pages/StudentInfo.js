@@ -124,10 +124,17 @@ const StudentInfo = () => {
       Subject: item.subject_name,
       "Assignment 1": item.assignments[0].mk !== null ? item.assignments[0].mk : "N/A",
       Atps1: item.assignments[0].atmpt,
-      "Assignment 2": item.assignments[1].mk !== null ? item.assignments[1].mk : "N/A",
+      "outOff 1": item.assignments[0].tm !== null ? item.assignments[0].mk : "N/A",
+
+      "Assignment 2": item.assignments[1].mk !== null ? item.assignments[1].tm : "N/A",
       Atps2: item.assignments[1].atmpt,
+      "outOff 2": item.assignments[1].tm !== null ? item.assignments[0].tm : "N/A",
       Total: item.assignments.reduce(
         (acc, assignment) => acc + (Number(assignment.mk) || 0),
+        0
+      ),
+      "OutOff Total": item.assignments.reduce(
+        (acc, assignment) => acc + (Number(assignment.tm) || 0),
         0
       ),
       "Updated ": new Date(item.updatedAt).toLocaleDateString(),
@@ -140,11 +147,16 @@ const StudentInfo = () => {
       RegistrationNumber: item.registration_number || "N/A",
       Subject: item.subject_name || "N/A",
       "Assignment 1": item.assignments[0]?.mk || "N/A",
-      Atps1: item.assignments[0]?.atmpt || "N/A",
-      "Assignment 2": item.assignments[1]?.mk || "N/A",
-      Atps2: item.assignments[1]?.atmpt || "N/A",
+      "outOff 1": item.assignments[0].tm !== null ? item.assignments[0].mk : "N/A",
+      "Assignment 2": item.assignments[1].mk !== null ? item.assignments[1].tm : "N/A",
+      Atps2: item.assignments[1].atmpt,
+      "outOff 2": item.assignments[1].tm !== null ? item.assignments[0].tm : "N/A",
       Total: item.assignments.reduce(
         (acc, assignment) => acc + (Number(assignment.mk) || 0),
+        0
+      ),
+      "OutOff Total": item.assignments.reduce(
+        (acc, assignment) => acc + (Number(assignment.tm) || 0),
         0
       ),
       Updated: new Date(item.updatedAt).toLocaleDateString() || "N/A",
@@ -165,6 +177,18 @@ const StudentInfo = () => {
         "http://65.1.54.123:7000/api/student/getAllStudents",
         { responseType: "json" }
       );
+      const FllipedStudent = await axios.get(
+        "http://localhost:7000/api/student/getAllStudents",
+        { responseType: "json" }
+      );
+
+      const flippedStudentData = FllipedStudent.data;
+      const SubjectCode = await axios.get(
+        "http://localhost:7000/api/student/getAllStudents",
+        { responseType: "json" }
+      );
+      const SubjectCodeData = SubjectCode.data;
+
       const studentsData = studentsResponse.data;
 
       // Combine data based on user_id
@@ -175,9 +199,9 @@ const StudentInfo = () => {
 
         return {
           ...marksItem,
-          registration_number: matchingStudent
-            ? matchingStudent.registration_number
-            : "N/A",
+          registration_number: matchingStudent ? matchingStudent.registration_number : "SWM Reg_No NF",
+          email: matchingStudent ? matchingStudent.email : "SWM Email NF",
+          name: matchingStudent ? matchingStudent.name : "SWM name NF"
         };
       });
 
