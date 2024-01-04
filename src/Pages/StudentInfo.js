@@ -145,13 +145,18 @@ const StudentInfo = () => {
   const prepareDataForExcel = (data) => {
     return data.map((item) => ({
       RegistrationNumber: item.registration_number || "N/A",
+      email: item.email || "N/A",
+      name: item.name || "N/A",
       Subject: item.subject_name || "N/A",
       "Assignment 1": item.assignments[0]?.mk || "N/A",
-      "outOff 1": item.assignments[0].tm !== null ? item.assignments[0].mk : "N/A",
-      "Assignment 2": item.assignments[1].mk !== null ? item.assignments[1].tm : "N/A",
-      Atps2: item.assignments[1].atmpt,
-      "outOff 2": item.assignments[1].tm !== null ? item.assignments[0].tm : "N/A",
-      Total: item.assignments.reduce(
+      "OutOff 1": item.assignments[0]?.tm || "N/A",
+      Atps1: item.assignments[0]?.atmpt || "N/A",
+  
+      "Assignment 2": item.assignments[1]?.mk || "N/A",
+      "OutOff 2": item.assignments[1]?.tm || "N/A",
+      Atps2: item.assignments[1]?.atmpt || "N/A",
+  
+      "Total Marks": item.assignments.reduce(
         (acc, assignment) => acc + (Number(assignment.mk) || 0),
         0
       ),
@@ -159,10 +164,10 @@ const StudentInfo = () => {
         (acc, assignment) => acc + (Number(assignment.tm) || 0),
         0
       ),
-      Updated: new Date(item.updatedAt).toLocaleDateString() || "N/A",
+      Updated: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "N/A",
     }));
   };
-
+  
   const downloadAllStudentsMarks = async () => {
     try {
       // Fetch FlattenedDataModel data
@@ -177,17 +182,17 @@ const StudentInfo = () => {
         "http://65.1.54.123:7000/api/student/getAllStudents",
         { responseType: "json" }
       );
-      const FllipedStudent = await axios.get(
-        "http://localhost:7000/api/student/getAllStudents",
-        { responseType: "json" }
-      );
+      // const FllipedStudent = await axios.get(
+      //   "http://localhost:7000/api/student/getAllStudents",
+      //   { responseType: "json" }
+      // );
 
-      const flippedStudentData = FllipedStudent.data;
-      const SubjectCode = await axios.get(
-        "http://localhost:7000/api/student/getAllStudents",
-        { responseType: "json" }
-      );
-      const SubjectCodeData = SubjectCode.data;
+      // const flippedStudentData = FllipedStudent.data;
+      // const SubjectCode = await axios.get(
+      //   "http://localhost:7000/api/student/getAllStudents",
+      //   { responseType: "json" }
+      // );
+      // const SubjectCodeData = SubjectCode.data;
 
       const studentsData = studentsResponse.data;
 
@@ -236,6 +241,9 @@ const StudentInfo = () => {
       console.error("Error:", error);
     }
   };
+
+
+
   return (
     <div className="container fount" style={{ minHeight: "90vh" }}>
       <div
