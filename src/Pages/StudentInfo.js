@@ -151,11 +151,11 @@ const StudentInfo = () => {
       "Assignment 1": item.assignments[0]?.mk || "N/A",
       "OutOff 1": item.assignments[0]?.tm || "N/A",
       Atps1: item.assignments[0]?.atmpt || "N/A",
-  
+
       "Assignment 2": item.assignments[1]?.mk || "N/A",
       "OutOff 2": item.assignments[1]?.tm || "N/A",
       Atps2: item.assignments[1]?.atmpt || "N/A",
-  
+
       "Total Marks": item.assignments.reduce(
         (acc, assignment) => acc + (Number(assignment.mk) || 0),
         0
@@ -167,7 +167,7 @@ const StudentInfo = () => {
       Updated: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "N/A",
     }));
   };
-  
+
   const downloadAllStudentsMarks = async () => {
     try {
       // Fetch FlattenedDataModel data
@@ -182,18 +182,6 @@ const StudentInfo = () => {
         "http://65.1.54.123:7000/api/student/getAllStudents",
         { responseType: "json" }
       );
-      // const FllipedStudent = await axios.get(
-      //   "http://localhost:7000/api/student/getAllStudents",
-      //   { responseType: "json" }
-      // );
-
-      // const flippedStudentData = FllipedStudent.data;
-      // const SubjectCode = await axios.get(
-      //   "http://localhost:7000/api/student/getAllStudents",
-      //   { responseType: "json" }
-      // );
-      // const SubjectCodeData = SubjectCode.data;
-
       const studentsData = studentsResponse.data;
 
       // Combine data based on user_id
@@ -210,7 +198,6 @@ const StudentInfo = () => {
         };
       });
 
-      console.log("Combined Data:", combinedData);
 
       // Prepare data for Excel
       const excelData = prepareDataForExcel(combinedData);
@@ -242,7 +229,70 @@ const StudentInfo = () => {
     }
   };
 
+  const downloadAllStudentsMarksWithSubCode = async () => {
+    try {
+      // Fetch FlattenedDataModel data
+      const marksResponse = await axios.get(
+        "http://65.1.54.123:7000/getStudentDatawithsubjectCode",
+        { responseType: "json" }
+      );
+      const marksData = marksResponse.data.data;
+      console.log("with code Data:", marksData);
+      const excelData = prepareDataWithSubjectCodeForExcel(marksData);
 
+      // Create and download Excel file
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      const fileName = `${formattedDate}_all_Student_marks_data.xlsx`;
+
+      // Use XLSX.write to create an array buffer
+      const arrayBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+      // Convert array buffer to Blob
+      const blob = new Blob([arrayBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      // Create a download link
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+      alert('File Download Successfully ..!')
+      setDwn(false)
+
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const prepareDataWithSubjectCodeForExcel = (data) => {
+    return data.map((item) => ({
+      RegistrationNumber: item.registration_number || "N/A",
+      email: item.email || "N/A",
+      name: item.name || "N/A",
+      "Subject Code": item.subject_code,
+      Subject: item.subject_name || "N/A",
+      "Assignment 1": item.assignments[0]?.mk || "N/A",
+      "OutOff 1": item.assignments[0]?.tm || "N/A",
+      Atps1: item.assignments[0]?.atmpt || "N/A",
+
+      "Assignment 2": item.assignments[1]?.mk || "N/A",
+      "OutOff 2": item.assignments[1]?.tm || "N/A",
+      Atps2: item.assignments[1]?.atmpt || "N/A",
+
+      "Total Marks": item.assignments.reduce(
+        (acc, assignment) => acc + (Number(assignment.mk) || 0),
+        0
+      ),
+      "OutOff Total": item.assignments.reduce(
+        (acc, assignment) => acc + (Number(assignment.tm) || 0),
+        0
+      ),
+      Updated: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "N/A",
+    }));
+  };
 
   return (
     <div className="container fount" style={{ minHeight: "90vh" }}>
@@ -311,6 +361,13 @@ const StudentInfo = () => {
                           onClick={downloadAllStudentsMarks}
                         >
                           Download
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary"
+                          onClick={downloadAllStudentsMarksWithSubCode}
+                        >
+                          with-Code
                         </button>
                       </>
 
