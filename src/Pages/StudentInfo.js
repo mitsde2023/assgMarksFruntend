@@ -142,92 +142,92 @@ const StudentInfo = () => {
   };
 
 
-  const prepareDataForExcel = (data) => {
-    return data.map((item) => ({
-      RegistrationNumber: item.registration_number || "N/A",
-      email: item.email || "N/A",
-      name: item.name || "N/A",
-      Subject: item.subject_name || "N/A",
-      "Assignment 1": item.assignments[0]?.mk || "N/A",
-      "OutOff 1": item.assignments[0]?.tm || "N/A",
-      Atps1: item.assignments[0]?.atmpt || "N/A",
+  // const prepareDataForExcel = (data) => {
+  //   return data.map((item) => ({
+  //     RegistrationNumber: item.registration_number || "N/A",
+  //     email: item.email || "N/A",
+  //     name: item.name || "N/A",
+  //     Subject: item.subject_name || "N/A",
+  //     "Assignment 1": item.assignments[0]?.mk || "N/A",
+  //     "OutOff 1": item.assignments[0]?.tm || "N/A",
+  //     Atps1: item.assignments[0]?.atmpt || "N/A",
 
-      "Assignment 2": item.assignments[1]?.mk || "N/A",
-      "OutOff 2": item.assignments[1]?.tm || "N/A",
-      Atps2: item.assignments[1]?.atmpt || "N/A",
+  //     "Assignment 2": item.assignments[1]?.mk || "N/A",
+  //     "OutOff 2": item.assignments[1]?.tm || "N/A",
+  //     Atps2: item.assignments[1]?.atmpt || "N/A",
 
-      "Total Marks": item.assignments.reduce(
-        (acc, assignment) => acc + (Number(assignment.mk) || 0),
-        0
-      ),
-      "OutOff Total": item.assignments.reduce(
-        (acc, assignment) => acc + (Number(assignment.tm) || 0),
-        0
-      ),
-      Updated: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "N/A",
-    }));
-  };
+  //     "Total Marks": item.assignments.reduce(
+  //       (acc, assignment) => acc + (Number(assignment.mk) || 0),
+  //       0
+  //     ),
+  //     "OutOff Total": item.assignments.reduce(
+  //       (acc, assignment) => acc + (Number(assignment.tm) || 0),
+  //       0
+  //     ),
+  //     Updated: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "N/A",
+  //   }));
+  // };
 
-  const downloadAllStudentsMarks = async () => {
-    try {
-      // Fetch FlattenedDataModel data
-      const marksResponse = await axios.get(
-        "http://65.1.54.123:7000/api/marks/getAllFlattenedData",
-        { responseType: "json" }
-      );
-      const marksData = marksResponse.data;
+  // const downloadAllStudentsMarks = async () => {
+  //   try {
+  //     // Fetch FlattenedDataModel data
+  //     const marksResponse = await axios.get(
+  //       "http://65.1.54.123:7000/api/marks/getAllFlattenedData",
+  //       { responseType: "json" }
+  //     );
+  //     const marksData = marksResponse.data;
 
-      // Fetch All_Students data
-      const studentsResponse = await axios.get(
-        "http://65.1.54.123:7000/api/student/getAllStudents",
-        { responseType: "json" }
-      );
-      const studentsData = studentsResponse.data;
+  //     // Fetch All_Students data
+  //     const studentsResponse = await axios.get(
+  //       "http://65.1.54.123:7000/api/student/getAllStudents",
+  //       { responseType: "json" }
+  //     );
+  //     const studentsData = studentsResponse.data;
 
-      // Combine data based on user_id
-      const combinedData = marksData.map((marksItem) => {
-        const matchingStudent = studentsData.find(
-          (student) => student.user_id === marksItem.user_id
-        );
+  //     // Combine data based on user_id
+  //     const combinedData = marksData.map((marksItem) => {
+  //       const matchingStudent = studentsData.find(
+  //         (student) => student.user_id === marksItem.user_id
+  //       );
 
-        return {
-          ...marksItem,
-          registration_number: matchingStudent ? matchingStudent.registration_number : "SWM Reg_No NF",
-          email: matchingStudent ? matchingStudent.email : "SWM Email NF",
-          name: matchingStudent ? matchingStudent.name : "SWM name NF"
-        };
-      });
+  //       return {
+  //         ...marksItem,
+  //         registration_number: matchingStudent ? matchingStudent.registration_number : "SWM Reg_No NF",
+  //         email: matchingStudent ? matchingStudent.email : "SWM Email NF",
+  //         name: matchingStudent ? matchingStudent.name : "SWM name NF"
+  //       };
+  //     });
 
 
-      // Prepare data for Excel
-      const excelData = prepareDataForExcel(combinedData);
+  //     // Prepare data for Excel
+  //     const excelData = prepareDataForExcel(combinedData);
 
-      // Create and download Excel file
-      const ws = XLSX.utils.json_to_sheet(excelData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-      const fileName = `${formattedDate}_all_Student_marks_data.xlsx`;
+  //     // Create and download Excel file
+  //     const ws = XLSX.utils.json_to_sheet(excelData);
+  //     const wb = XLSX.utils.book_new();
+  //     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  //     const fileName = `${formattedDate}_all_Student_marks_data.xlsx`;
 
-      // Use XLSX.write to create an array buffer
-      const arrayBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  //     // Use XLSX.write to create an array buffer
+  //     const arrayBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 
-      // Convert array buffer to Blob
-      const blob = new Blob([arrayBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
+  //     // Convert array buffer to Blob
+  //     const blob = new Blob([arrayBuffer], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     });
 
-      // Create a download link
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      link.click();
-      alert('File Download Successfully ..!')
-      setDwn(false)
+  //     // Create a download link
+  //     const link = document.createElement("a");
+  //     link.href = URL.createObjectURL(blob);
+  //     link.download = fileName;
+  //     link.click();
+  //     alert('File Download Successfully ..!')
+  //     setDwn(false)
 
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //   }
+  // };
 
   const downloadAllStudentsMarksWithSubCode = async () => {
     try {
@@ -358,16 +358,9 @@ const StudentInfo = () => {
                         <button
                           type="button"
                           className="btn btn-outline-primary"
-                          onClick={downloadAllStudentsMarks}
-                        >
-                          Download
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-primary"
                           onClick={downloadAllStudentsMarksWithSubCode}
                         >
-                          with-Code
+                         Download
                         </button>
                       </>
 
